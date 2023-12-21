@@ -1,17 +1,17 @@
-
-import 'package:bulletpoints/firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:bulletpoints/constants/routes.dart';
+import 'package:bulletpoints/services/auth/auth_exceptions.dart';
+import 'package:bulletpoints/services/auth/auth_service.dart';
+import 'package:bulletpoints/utils/show_error_dialog.dart';
 import 'package:flutter/material.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
 
   @override
-  State <RegisterView> createState() =>  RegisterViewState();
+  State<RegisterView> createState() => RegisterViewState();
 }
 
-class  RegisterViewState extends State<RegisterView> {
+class RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
 
@@ -28,13 +28,11 @@ class  RegisterViewState extends State<RegisterView> {
     _password.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register')
-      ),
+      appBar: AppBar(title: const Text('Register')),
       body: Column(
         children: [
           TextField(
@@ -42,51 +40,53 @@ class  RegisterViewState extends State<RegisterView> {
             keyboardType: TextInputType.emailAddress,
             enableSuggestions: false,
             autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: "Enter Email"
-            ),
+            decoration: const InputDecoration(hintText: "Enter Email"),
           ),
           TextField(
             controller: _password,
             obscureText: true,
             enableSuggestions: false,
             autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: "Enter Password"
-            ),
+            decoration: const InputDecoration(hintText: "Enter Password"),
           ),
           TextButton(
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
-              try{
-                final userCredential = await  FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
-              }on FirebaseAuthException catch (e){
-                //print(e.code);
-                switch (e.code){
-                  case 'invalid-email':
-                    print('invalid-email');
-                    break;
-                  case 'email-already-in-use':
-                    print('email-already-in-use');
-                    break;
-                  case 'weak-password':
-                    print('weak-password');
-                    break; 
+              try {
+                await AuthService.firebase()
+                    .createUser(email: email, password: password);
+                await AuthService.firebase().sendEmailVerification();
+                if (context.mounted) {
+                  Navigator.of(context).pushNamed(verifyEmailRoute);
+                }
+              } on InvalidEmailAuthException {
+                if (context.mounted) {
+                  await showErrorDialog(context, 'invalid-email');
+                }
+              } on EmailAlreadyInUseAuthException {
+                if (context.mounted) {
+                  await showErrorDialog(context, 'email-already-in-use');
+                }
+              } on WeakPasswordAuthException {
+                if (context.mounted) {
+                  await showErrorDialog(context, 'weak-password');
+                }
+              } on GenericAuthException {
+                if (context.mounted) {
+                  await showErrorDialog(context, 'Something went wrong.');
                 }
               }
             },
             child: const Text("Register"),
           ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              '/login/', (route) => 
-                false
-            );
-          }, 
-          child: const Text('Already registered? Log in here!'),
-        ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil(loginRoute, (route) => false);
+            },
+            child: const Text('Already registered? Log in here!'),
+          ),
         ],
       ),
     );

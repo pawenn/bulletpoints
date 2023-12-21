@@ -1,7 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'package:bulletpoints/constants/routes.dart';
+import 'package:bulletpoints/services/auth/auth_exceptions.dart';
+import 'package:bulletpoints/services/auth/auth_service.dart';
+import 'package:bulletpoints/utils/show_error_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:bulletpoints/firebase_options.dart';
+import 'dart:developer' as devtools show log;
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -27,7 +29,7 @@ class _LoginViewState extends State<LoginView> {
     _password.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,45 +41,59 @@ class _LoginViewState extends State<LoginView> {
             keyboardType: TextInputType.emailAddress,
             enableSuggestions: false,
             autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: "Enter Email"
-            ),
+            decoration: const InputDecoration(hintText: "Enter Email"),
           ),
           TextField(
             controller: _password,
             obscureText: true,
             enableSuggestions: false,
             autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: "Enter Password"
-            ),
+            decoration: const InputDecoration(hintText: "Enter Password"),
           ),
           TextButton(
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
-              try{
-                final userCredential = await  FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-                print(userCredential);
-              }on FirebaseAuthException catch (e){
-                print(e.code);
+              try {
+                await AuthService.firebase()
+                    .login(email: email, password: password);
+                final user = AuthService.firebase().currentUser;
+                if (context.mounted && (user?.isEmailverified ?? false)) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    notesRoute,
+                    (_) => false,
+                  );
+                } else if (context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    verifyEmailRoute,
+                    (_) => false,
+                  );
+                }
+              } on InvalidCredentialAuthException {
+                if (context.mounted) {
+                  await showErrorDialog(context, 'invalid-credential');
+                }
+              } on InvalidEmailAuthException {
+                if (context.mounted) {
+                  await showErrorDialog(context, 'invalid-email');
+                }
+              } on GenericAuthException {
+                if (context.mounted) {
+                  await showErrorDialog(context, 'Authentication error');
+                }
               }
             },
             child: const Text("Login"),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/register/', (route) => 
-                  false
-              );
-            }, 
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil(registerRoute, (route) => false);
+            },
             child: const Text('Not registered yet? Register here!'),
           ),
-      
         ],
       ),
     );
   }
-  
 }
