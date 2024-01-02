@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
+import 'dart:developer' as devtools show log;
 
 class NotesService {
   Database? _db;
@@ -11,11 +12,16 @@ class NotesService {
   List<DatabaseNote> _notes = [];
 
   static final NotesService _shared = NotesService._sharedInstance();
-  NotesService._sharedInstance();
+  NotesService._sharedInstance() {
+    _notesStreamController =
+        StreamController<List<DatabaseNote>>.broadcast(onListen: () {
+      _notesStreamController.sink.add(_notes);
+    });
+  }
+
   factory NotesService() => _shared;
 
-  final _notesStreamController =
-      StreamController<List<DatabaseNote>>.broadcast();
+  late final StreamController<List<DatabaseNote>> _notesStreamController;
 
   Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
 
@@ -174,10 +180,10 @@ class NotesService {
     final notes = await db.query(
       noteTable,
       limit: 1,
-      where: "id = id",
+      where: "id = ?",
       whereArgs: [id],
     );
-
+    devtools.log(notes.toString());
     if (notes.isEmpty) {
       throw CouldNotFindNoteException();
     } else {
@@ -228,7 +234,6 @@ class NotesService {
       {required DatabaseNote note, required String text}) async {
     await _ensureDbisOpen();
     final db = _getDatabaseOrThrow();
-
     await getNote(id: note.id);
 
     final updatesCount = await db.update(
@@ -257,6 +262,7 @@ class NotesService {
 class DatabaseUser {
   final int id;
   final String email;
+
   const DatabaseUser({
     required this.id,
     required this.email,
@@ -267,7 +273,7 @@ class DatabaseUser {
         email = map[emailColumn] as String;
 
   @override
-  String toString() => "Person, ID = $id, email = $email";
+  String toString() => "Person = $id, email = $email";
 
   @override
   bool operator ==(covariant DatabaseUser other) => id == other.id;
@@ -295,14 +301,17 @@ class DatabaseNote {
         isSyncedWithCloud = (map[isSyncColumn] as int) == 1 ? true : false;
 
   @override
-  String toString() => "Note, ID = $id, userID = $userId";
+  String toString() => "Note, ID = $id, userID = $userId, text = $text";
+
+  @override
+  bool operator ==(covariant DatabaseNote other) => id == other.id;
 
   @override
   int get hashCode => id.hashCode;
 }
 
 const dbName = "bulletpoibts.db";
-const noteTable = "note";
+const noteTable = "notes";
 const userTable = "user";
 const idColumn = "id";
 const emailColumn = "email";

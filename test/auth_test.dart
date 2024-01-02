@@ -118,7 +118,10 @@ class MockAuthProvider implements CustomAuthProvider {
     if (!_isInitialized) throw NotInitializedException();
     if (password == '1234') throw InvalidCredentialAuthException();
     if (email == 'max.mustermann') throw InvalidCredentialAuthException();
-    const user = AuthUser(isEmailverified: false);
+    const user = AuthUser(
+      isEmailverified: false,
+      email: 'max.mustermann',
+    );
     _user = user;
     return Future.value(user);
   }
@@ -128,6 +131,9 @@ class MockAuthProvider implements CustomAuthProvider {
     if (!_isInitialized) throw NotInitializedException();
     final user = _user;
     if (user == null) throw UserNotLoggedInAuthException();
-    _user = const AuthUser(isEmailverified: true);
+    _user = const AuthUser(
+      isEmailverified: true,
+      email: 'max.mustermann',
+    );
   }
 }
