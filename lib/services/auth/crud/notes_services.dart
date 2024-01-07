@@ -183,7 +183,6 @@ class NotesService {
       where: "id = ?",
       whereArgs: [id],
     );
-    devtools.log(notes.toString());
     if (notes.isEmpty) {
       throw CouldNotFindNoteException();
     } else {
