@@ -6,6 +6,7 @@ import 'package:bulletpoints/utils/dialogs/logout_dialog.dart';
 import 'package:bulletpoints/views/notes/notes_list_view.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
+import 'package:bulletpoints/constants/globals.dart' as globals;
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -16,7 +17,8 @@ class NotesView extends StatefulWidget {
 
 class _NotesViewState extends State<NotesView> {
   late final NotesService _notesService;
-  String get userEmail => AuthService.firebase().currentUser!.email!;
+  String get userEmail =>
+      AuthService.backend(globals.authProvider).currentUser!.email!;
 
   @override
   void initState() {
@@ -42,7 +44,7 @@ class _NotesViewState extends State<NotesView> {
                 case MenuAction.logout:
                   final shouldLogOut = await showLogOutDialog(context);
                   if (shouldLogOut) {
-                    await AuthService.firebase().logOut();
+                    await AuthService.backend(globals.authProvider).logOut();
                     if (context.mounted) {
                       Navigator.of(context)
                           .pushNamedAndRemoveUntil(loginRoute, (_) => false);

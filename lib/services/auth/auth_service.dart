@@ -1,18 +1,25 @@
 import 'package:bulletpoints/services/auth/auth_providers.dart';
 import 'package:bulletpoints/services/auth/auth_user.dart';
 import 'package:bulletpoints/services/auth/firebase_auth_provider.dart';
+import 'package:bulletpoints/services/auth/supabase_auth_provider.dart';
 
 class AuthService implements CustomAuthProvider {
   final CustomAuthProvider provider;
   const AuthService(this.provider);
 
-  factory AuthService.firebase() => AuthService(FirebaseAuthProvider());
+  factory AuthService.backend(String backend) {
+    if (backend == "firebase") {
+      return AuthService(FirebaseAuthProvider());
+    } else {
+      return AuthService(SupabaseAuthProvider());
+    }
+  }
 
   @override
   Future<void> initialize() => provider.initialize();
 
   @override
-  Future<AuthUser> createUser({
+  Future<void> createUser({
     required String email,
     required String password,
   }) =>

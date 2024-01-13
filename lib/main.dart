@@ -1,4 +1,5 @@
 import 'package:bulletpoints/constants/routes.dart';
+import 'package:bulletpoints/constants/globals.dart' as globals;
 import 'package:bulletpoints/services/auth/auth_service.dart';
 import 'package:bulletpoints/views/login_view.dart';
 import 'package:bulletpoints/views/notes/create_update_note_view.dart';
@@ -34,17 +35,14 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: AuthService.firebase().initialize(),
+      future: AuthService.backend(globals.authProvider).initialize(),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-            final user = AuthService.firebase().currentUser;
+            final user = AuthService.backend(globals.authProvider).currentUser;
+            devtools.log("Current user: $user");
             if (user != null) {
-              if (user.isEmailverified) {
-                return const NotesView();
-              } else {
-                return const VerifyEmailView();
-              }
+              return const NotesView();
             } else {
               return const LoginView();
             }

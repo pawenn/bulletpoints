@@ -3,6 +3,8 @@ import 'package:bulletpoints/services/auth/auth_exceptions.dart';
 import 'package:bulletpoints/services/auth/auth_service.dart';
 import 'package:bulletpoints/utils/dialogs/error_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:bulletpoints/constants/globals.dart' as globals;
+import 'dart:developer' as devtools show log;
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -51,12 +53,13 @@ class RegisterViewState extends State<RegisterView> {
           ),
           TextButton(
             onPressed: () async {
+              devtools.log("Pressing register button");
               final email = _email.text;
               final password = _password.text;
               try {
-                await AuthService.firebase()
+                await AuthService.backend(globals.authProvider)
                     .createUser(email: email, password: password);
-                await AuthService.firebase().sendEmailVerification();
+                devtools.log("Go to verifyemailview.");
                 if (context.mounted) {
                   Navigator.of(context).pushNamed(verifyEmailRoute);
                 }

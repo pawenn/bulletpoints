@@ -10,7 +10,7 @@ abstract class CustomAuthProvider {
     required String password,
   });
 
-  Future<AuthUser> createUser({
+  Future<void> createUser({
     required String email,
     required String password,
   });

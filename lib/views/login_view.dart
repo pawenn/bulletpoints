@@ -4,6 +4,7 @@ import 'package:bulletpoints/services/auth/auth_service.dart';
 import 'package:bulletpoints/utils/dialogs/error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
+import 'package:bulletpoints/constants/globals.dart' as globals;
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -55,9 +56,10 @@ class _LoginViewState extends State<LoginView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                await AuthService.firebase()
+                await AuthService.backend(globals.authProvider)
                     .login(email: email, password: password);
-                final user = AuthService.firebase().currentUser;
+                final user =
+                    AuthService.backend(globals.authProvider).currentUser;
                 if (context.mounted && (user?.isEmailverified ?? false)) {
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     notesRoute,
