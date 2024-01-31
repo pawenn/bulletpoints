@@ -1,13 +1,11 @@
 import 'package:bulletpoints/constants/routes.dart';
-import 'package:bulletpoints/constants/globals.dart' as globals;
-import 'package:bulletpoints/services/auth/auth_service.dart';
+import 'package:bulletpoints/services/auth/supabase_auth_provider.dart';
 import 'package:bulletpoints/views/login_view.dart';
 import 'package:bulletpoints/views/notes/create_update_note_view.dart';
 import 'package:bulletpoints/views/notes/notes_view.dart';
 import 'package:bulletpoints/views/register_view.dart';
 import 'package:bulletpoints/views/verify_email_view.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer' as devtools show log;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,12 +33,15 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: AuthService.backend(globals.authProvider).initialize(),
+      future: SupabaseAuthProvider.instance().initialize(),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-            final user = AuthService.backend(globals.authProvider).currentUser;
-            devtools.log("Current user: $user");
+            final user = SupabaseAuthProvider.instance().currentUser;
+            //final email = user?.email;
+            //Delete this later, just for testing
+
+            //#########################
             if (user != null) {
               return const NotesView();
             } else {

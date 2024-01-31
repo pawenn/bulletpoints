@@ -10,6 +10,11 @@ abstract class CustomAuthProvider {
     required String password,
   });
 
+  Future<void> loginWithGoogle();
+
+  Future<void> loginWithApple();
+
+
   Future<void> createUser({
     required String email,
     required String password,

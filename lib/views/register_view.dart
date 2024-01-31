@@ -1,9 +1,8 @@
 import 'package:bulletpoints/constants/routes.dart';
 import 'package:bulletpoints/services/auth/auth_exceptions.dart';
-import 'package:bulletpoints/services/auth/auth_service.dart';
+import 'package:bulletpoints/services/auth/supabase_auth_provider.dart';
 import 'package:bulletpoints/utils/dialogs/error_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:bulletpoints/constants/globals.dart' as globals;
 import 'dart:developer' as devtools show log;
 
 class RegisterView extends StatefulWidget {
@@ -57,7 +56,7 @@ class RegisterViewState extends State<RegisterView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                await AuthService.backend(globals.authProvider)
+                await SupabaseAuthProvider.instance()
                     .createUser(email: email, password: password);
                 devtools.log("Go to verifyemailview.");
                 if (context.mounted) {

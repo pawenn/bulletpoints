@@ -1,7 +1,8 @@
 import 'package:bulletpoints/constants/routes.dart';
 import 'package:bulletpoints/enums/menu_action.dart';
-import 'package:bulletpoints/services/auth/auth_service.dart';
 import 'package:bulletpoints/services/auth/crud/notes_services.dart';
+import 'package:bulletpoints/services/auth/google_auth_provider.dart';
+import 'package:bulletpoints/services/auth/supabase_auth_provider.dart';
 import 'package:bulletpoints/utils/dialogs/logout_dialog.dart';
 import 'package:bulletpoints/views/notes/notes_list_view.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +18,7 @@ class NotesView extends StatefulWidget {
 
 class _NotesViewState extends State<NotesView> {
   late final NotesService _notesService;
-  String get userEmail =>
-      AuthService.backend(globals.authProvider).currentUser!.email!;
+  String get userEmail => SupabaseAuthProvider.instance().currentUser!.email!;
 
   @override
   void initState() {
@@ -44,7 +44,8 @@ class _NotesViewState extends State<NotesView> {
                 case MenuAction.logout:
                   final shouldLogOut = await showLogOutDialog(context);
                   if (shouldLogOut) {
-                    await AuthService.backend(globals.authProvider).logOut();
+                    await SupabaseAuthProvider.instance().logOut();
+                    await GoogleAuthProvider.instance().handleSignOut();
                     if (context.mounted) {
                       Navigator.of(context)
                           .pushNamedAndRemoveUntil(loginRoute, (_) => false);
